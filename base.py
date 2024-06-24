@@ -24,6 +24,6 @@ response = model.invoke(messages)
 
 pprint(response)
        
-
+#parser aswait 2 sec before script is allowed to go further.
 
 
