@@ -20,16 +20,12 @@ os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 embeddings = OpenAIEmbeddings()
 
 def create_db_from_youtube_video_url(video_url: str) -> FAISS:
-    #https://python.langchain.com/v0.2/docs/integrations/document_loaders/youtube_transcript/
     loader = YoutubeLoader.from_youtube_url(video_url)
     transcript = loader.load()
-
-    #https://python.langchain.com/v0.2/docs/how_to/recursive_text_splitter/#splitting-text-from-languages-without-word-boundaries
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     docs = text_splitter.split_documents(transcript)
     
     #faiss-cpu 1.7.4
-    #https://python.langchain.com/v0.2/docs/integrations/vectorstores/faiss/#as-a-retriever
     db = FAISS.from_documents(docs, embeddings)
     return db
 
@@ -43,7 +39,7 @@ def get_response_from_query(db, query, k=4):
     docs = db.similarity_search(query, k=k)
     docs_page_content = " ".join([d.page_content for d in docs])
 
-    llm = ChatOpenAI(model="gpt-4")
+    llm = ChatOpenAI(model="gpt-3.5-turbo")
 
     prompt = PromptTemplate(
         input_variables=["question", "docs"],
@@ -67,16 +63,10 @@ def get_response_from_query(db, query, k=4):
     chain = prompt | llm | parser
     # Use a dictionary to pass the inputs to the invoke method
     response = chain.invoke({"question": query, "docs": docs_page_content})
+    print(response)
     #response = response.replace("\n", "")
     return response, docs
 
-def main():
-    url = 'https://www.youtube.com/watch?v=R2q08ZP8h74'
-    query = 'is this a good youtubevideo?'
-    db = create_db_from_youtube_video_url(url)
-    response, docs = get_response_from_query(db, query)
-    print(response)
 
 
-if __name__ == "__main__":
-    main()
+

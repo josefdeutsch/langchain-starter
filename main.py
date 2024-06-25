@@ -1,31 +1,33 @@
-import getpass
-import os
-from langchain_openai import ChatOpenAI
+import streamlit as st
+import langchain_helper as lch
+import textwrap
 
-# Prompt the user for the OpenAI API key
-openai_api_key = getpass.getpass(prompt="Enter your OpenAI API key: ")
+# Streamlit app
+st.title("Patricia's YouTube Assistant")
 
-# Set the environment variable for the API key
-os.environ["OPENAI_API_KEY"] = openai_api_key
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_API_KEY"] = "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"
+with st.sidebar:
+    with st.form(key='my_form'):
+        youtube_url = st.text_area(
+            label="What is the YouTube video URL?",
+            max_chars=50,
+            height=None
+        )
+        query = st.text_area(
+            label="Ask me about the video?",
+            max_chars=50,
+            key="query",
+            height=None
+        )
+        submit_button = st.form_submit_button(label='Submit')
 
-# Function to verify the OpenAI API key
-def verify_openai_api_key(api_key):
-    try:
-        # Initialize the OpenAI model with the provided API key
-        model = ChatOpenAI(api_key=api_key, model="gpt-4")
-
-        # Make a test call to verify the key
-        response = model.invoke([{"role": "system", "content": "Translate the following from English into Italian"}, {"role": "user", "content": "hi!"}])
-        print("API Key is valid.")
-        print(response)
-        return True
-    except Exception as e:
-        print(f"Invalid API Key or other error occurred: {e}")
-        return False
-
-# Verify the OpenAI API key
-is_valid = verify_openai_api_key(openai_api_key)
-if not is_valid:
-    raise ValueError("Invalid OpenAI API Key. Please check your API key.")
+if query and youtube_url and submit_button:
+    db = lch.create_db_from_youtube_video_url(youtube_url)
+    response, docs = lch.get_response_from_query(db, query)
+    
+    st.subheader("Answer:")
+    formatted_response = textwrap.fill(response, width=85)
+    st.markdown(f"<pre>{formatted_response}</pre>", unsafe_allow_html=True)
+    
+    st.subheader("Relevant Transcript Sections:")
+    for doc in docs:
+        st.markdown(f"<pre>{doc.page_content}</pre>", unsafe_allow_html=True)
