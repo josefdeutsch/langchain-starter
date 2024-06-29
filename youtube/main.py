@@ -20,9 +20,6 @@ with st.sidebar:
         )
         submit_button = st.form_submit_button(label='Submit')
 
-#Use agenda example:
-#https://destinyhosted.com/agenda_publish.cfm?id=45623&mt=ALL&vl=true&get_month=6&get_year=2024&dsp=ag&seq=1494
-#https://www.youtube.com/watch?v=R2q08ZP8h74
 if query and youtube_url and submit_button:
     db = lch.create_db_from_youtube_video_url(youtube_url)
     response, docs = lch.get_response_from_query(db, query)

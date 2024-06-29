@@ -6,12 +6,14 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import FAISS
 from langchain_openai import ChatOpenAI,OpenAIEmbeddings
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain import hub
 from langchain.agents import AgentExecutor
 
 from langchain.tools.retriever import create_retriever_tool
 from langchain.agents import create_tool_calling_agent
+
 
 load_dotenv()
 
@@ -20,7 +22,7 @@ os.environ["LANGCHAIN_TRACING_V2"] = os.getenv('LANGCHAIN_TRACING_V2')
 os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 os.environ["TAVILY_API_KEY"] = os.getenv('TAVILY_API_KEY')
 
-# Check if USER_AGENT environment variable is already set, if not set it to a default value
+
 if not os.getenv('USER_AGENT'):
     os.environ['USER_AGENT'] = 'MyLangChainApp/1.0 (macOS; Python 3.9) LangChain/0.8'
 
@@ -39,7 +41,7 @@ retriever.invoke("how to upload a dataset")[0] #nur das Relevanteste!
 retriever_tool = create_retriever_tool(
     retriever,
     "langsmith_search",
-    "Search for information about LangSmith. For any questions about LangSmith, you must use this tool!",
+    "Search for information about Annual Report. For any questions about Report, you must use this tool!",
 )
 
 tools = [search, retriever_tool]
@@ -59,3 +61,4 @@ agent_executor.invoke({"input": "hi!"})
 agent_executor.invoke({"input": "how can langsmith help with testing?"})
 
 agent_executor.invoke({"input": "whats the weather in sf?"})
+
