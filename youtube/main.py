@@ -27,4 +27,5 @@ if query and youtube_url and submit_button:
     st.subheader("Answer:")
     formatted_response = textwrap.fill(response, width=85)
     st.markdown(f"<pre>{formatted_response}</pre>", unsafe_allow_html=True)
+    
 
