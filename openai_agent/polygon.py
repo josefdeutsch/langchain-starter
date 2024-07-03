@@ -19,14 +19,21 @@ os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 os.environ["TAVILY_API_KEY"] = os.getenv('TAVILY_API_KEY')
 os.environ["POLYGON_API_KEY"] = os.getenv('POLYGON_API_KEY')
 
+#"gpt-3.5-turbo-1106"
 llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
 
 
+#instructions = """A highly accurate and precise agent, it processes all input data and returns the output data in JSON format. The JSON format must be well-structured, and no duplicates are allowed."""
+#base_prompt = hub.pull("langchain-ai/openai-functions-template")
+#prompt = base_prompt.partial(instructions=instructions)
 
-instructions = """A highly accurate and precise agent, it processes all input data and returns the output data in JSON format. The JSON format must be well-structured, and no duplicates are allowed."""
-
-base_prompt = hub.pull("langchain-ai/openai-functions-template")
-prompt = base_prompt.partial(instructions=instructions)
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", "A highly accurate and precise agent, it processes all input data and returns the output data in JSON format. The JSON format must be well-structured, and no duplicates are allowed."),
+        ("user", "{input}"),
+        MessagesPlaceholder(variable_name="agent_scratchpad"),
+    ]
+)
 
 polygon = PolygonAPIWrapper()
 
