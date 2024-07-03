@@ -22,22 +22,29 @@ os.environ["POLYGON_API_KEY"] = os.getenv('POLYGON_API_KEY')
 #"gpt-3.5-turbo-1106"
 llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
 
-
 #instructions = """A highly accurate and precise agent, it processes all input data and returns the output data in JSON format. The JSON format must be well-structured, and no duplicates are allowed."""
 #base_prompt = hub.pull("langchain-ai/openai-functions-template")
 #prompt = base_prompt.partial(instructions=instructions)
 
 prompt = ChatPromptTemplate.from_messages(
     [
-        ("system", "A highly accurate and precise agent, it processes all input data and returns the output data in JSON format. The JSON format must be well-structured, and no duplicates are allowed."),
-        ("user", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
-    ]
+       ("system", "A highly accurate and precise agent processes all input data and outputs it in JSON format. Each object in the output contains the keys 'o' and 'c'. The JSON data structure must remain unchanged, be well-formatted, and free of duplicates. Only the keys 'o' and 'c' are included in the output."),
+       ("user", "{input}"),
+       MessagesPlaceholder(variable_name="agent_scratchpad"),
+   ]
 )
 
 polygon = PolygonAPIWrapper()
 
 toolkit = PolygonToolkit.from_polygon_api_wrapper(polygon)
+
+#
+#
+#
+#
+#
+#
+#
 
 agent = create_openai_tools_agent(llm, toolkit.get_tools(), prompt)
 
@@ -50,6 +57,14 @@ agent_executor = AgentExecutor(
 input_data = {
     "input": "Get aggregate data for X:BTCUSD ticker with a timespan of 1 day from 2023-01-09 to 2023-02-10.",
 }
+#Provide aggregate data for the X:BTCUSD ticker with a daily timespan, covering the period from January 9, 2023, to February 10, 2024.
+#Describe the values in Get aggregate data for X:BTCUSD ticker with a timespan of 1 day from 2023-01-09 to 2024-02-10.
+
+
+
+
+
 
 response = agent_executor.invoke(input=input_data)
 
+#Error code: 400 - {'error': {'message': "This model's maximum context length is 16385 tokens. However, your messages resulted in 29429 tokens (28993 in the messages, 436 in the functions). Please reduce the length of the messages or functions.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
