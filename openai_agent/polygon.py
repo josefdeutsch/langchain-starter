@@ -50,22 +50,6 @@ agent_executor = AgentExecutor(
 input_data = {
     "input": "Get aggregate data for X:BTCUSD ticker with a timespan of 1 day from 2023-01-09 to 2023-02-10.",
 }
-#Provide aggregate data for the X:BTCUSD ticker with a daily timespan, covering the period from January 9, 2023, to February 10, 2024.
-#Describe the values in Get aggregate data for X:BTCUSD ticker with a timespan of 1 day from 2023-01-09 to 2024-02-10.
 
+response = agent_executor.invoke(input=input_data)
 
-
-
-
-#response = agent_executor.invoke(input=input_data)
-
-agent_executor.invoke(
-    {
-        "chat_history": [
-            HumanMessage(content="Get aggregate data for X:BTCUSD ticker with a timespan of 1 day from 2023-01-09 to 2023-02-10."),
-            AIMessage(content="Hello Bob! How can I assist you today?"),
-        ],
-        "input": "Get aggregate data for X:BTCUSD ticker with a timespan of 1 day from 2023-01-09 to 2023-02-10.",
-    }
-)
-#Error code: 400 - {'error': {'message': "This model's maximum context length is 16385 tokens. However, your messages resulted in 29429 tokens (28993 in the messages, 436 in the functions). Please reduce the length of the messages or functions.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}

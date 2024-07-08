@@ -8,8 +8,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.utils.function_calling import convert_to_openai_function
 from langchain_openai import ChatOpenAI
 
-@tool
-def hurst(ts) -> float:
+def calculate_hurst_exponent(ts) -> float:
     """
     Calculate the Hurst Exponent of a time series vector `ts`.
     
@@ -30,6 +29,12 @@ def hurst(ts) -> float:
     tau = [sqrt(std(subtract(ts[lag:], ts[:-lag]))) for lag in lags]
     poly = polyfit(log(lags), log(tau), 1)
     return poly[0] * 2.0
+
+def calculate_cumulative_sum(a: int) -> np.ndarray:
+    return log(cumsum(a) + 1000) 
+
+
+
 
 # Generate a time series with 1000 items
 #ts = log(cumsum(randn(1000)) + 1000)
