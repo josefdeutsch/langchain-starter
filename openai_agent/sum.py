@@ -20,58 +20,65 @@ os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 os.environ["TAVILY_API_KEY"] = os.getenv('TAVILY_API_KEY')
 os.environ["POLYGON_API_KEY"] = os.getenv('POLYGON_API_KEY')
 
-@tool
-def calculate_hurst_exponent(ts) -> float:
-    """
-    Calculate the Hurst Exponent of a time series vector `ts`.
-    
-    The Hurst Exponent indicates whether a series is mean-reverting, trending, or 
-    following a Geometric Brownian Motion. It is determined by computing variances of 
-    lagged differences and fitting a linear model to estimate the exponent. An H value 
-    near 0 indicates strong mean reversion, while H near 1 indicates strong trending. 
-    The Hurst Exponent is useful for identifying time series behavior, particularly 
-    for mean-reverting trading strategies.
-    
-    Parameters:
-    ts (array-like): The time series vector.
-    
-    Returns:
-    float: The estimated Hurst Exponent.
-    """
 
-    lags = range(2, 100)  # A practical range of lags
-    tau = [np.sqrt(np.std(np.subtract(ts[lag:], ts[:-lag]))) for lag in lags]
+#Introduction to the Hurst exponent — with code in Python
+#https://medium.com/@jpolec_72972/the-rolling-hurst-exponent-in-python-19b7b908e251
+
+
+
+@tool
+def calculate_hurst_exponent(ts):
+    """
+    Calculate the Hurst exponent of a time series.
+
+
+    Parameters:
+    ts (list): A list representing the time series data.
+
+    Returns:
+    float: The Hurst exponent of the time series. Returns NaN if the time series is too short 
+           or if the computation fails.
+    """
+    ts = np.array(ts)  # Ensure ts is a NumPy array
+    lags = range(2, 100)
+    tau = []
+
+    for lag in lags:
+        if len(ts) <= lag:
+            break
+
+        lagged_diff = ts[lag:] - ts[:-lag]
+        if len(lagged_diff) > 1:
+            tau.append(np.std(lagged_diff))
+
+    tau = np.array(tau)
+
+    # Filter out invalid (zero or NaN) tau values
+    valid = (tau > 0)
+    lags = np.array(lags[:len(tau)])[valid]
+    tau = tau[valid]
+
+    if len(tau) < 2:
+        return np.nan
+
+    # Perform linear regression on log-log scale
     poly = np.polyfit(np.log(lags), np.log(tau), 1)
     return poly[0] * 2.0
 
 
+
 @tool
-def get_result_of_hurst_exponent(a: int) -> np.ndarray:
+def calculate_cumulative_sum(params: list) -> float: 
     """
-    Generate a log-cumulative sum of random numbers plus 1000.
+    Calculate the logarithm of the cumulative sum of a list.
 
-    This function generates an array by taking the cumulative sum of random numbers
-    and adding 1000 to each element. The logarithm of each element is then returned.
-
-    Parameters:
-    a (int): The number of random numbers to generate.
+    Args:
+        params (List[float]): A list of numerical values.
 
     Returns:
-    np.ndarray: The resulting array after log-cumulative summation.
+        float: The logarithm of the cumulative sum of the list.
     """
-    if a <= 0:
-        raise ValueError("The input 'a' must be a positive integer.")
-    
-    random_numbers = np.random.random(a)
-    cumulative_sum = np.cumsum(random_numbers) + 1000
-    
-    # Ensure no zero or negative values are passed to log
-    if np.any(cumulative_sum <= 0):
-        raise ValueError("Cumulative sum contains non-positive values.")
-    
-    log_cumulative_sum = np.log(cumulative_sum)
-    
-    return log_cumulative_sum
+    return log(cumsum(params))
 
 
 
@@ -95,7 +102,7 @@ llm = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0)
 
 # setup the toolkit
 # Combine all tools into a single list
-tools = [calculate_hurst_exponent, get_result_of_hurst_exponent] + polytool.get_tools()
+tools = [calculate_cumulative_sum,calculate_hurst_exponent] + polytool.get_tools()
 
 
 # Construct the OpenAI Tools agent
@@ -107,13 +114,15 @@ agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 #result = agent_executor.invoke({"input": "Get aggregate data for X:BTCUSD ticker with a timespan of 1 day from 2023-01-09 to 2023-02-10."})
 #print(result['output'])
 
+#Determine the Hurst exponent using opening prices
+#Determine the calculate_cumulative_sum of opening prices
+
 agent_executor.invoke(
     {
         "chat_history": [
-            HumanMessage(content="Get aggregate data for X:BTCUSD ticker with a timespan of 1 day from 2024-06-06 to 2024-07-07."),
-            AIMessage(content="Hello Bob! How can I assist you today?"),
+            HumanMessage(content="Get aggregate data for X:BTCUSD ticker with a timespan of 1 day from 2024-06-06 to 2024-07-07.")
         ],
-        "input": "Process the keys labeled: 'c' in every entry and calculate the Hurst exponent.",
+        "input": "Calculate the Hurst exponent using opening prices by using the cumulative sum of them"
     }
 )
 
